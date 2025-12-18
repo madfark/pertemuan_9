@@ -10,26 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _todoController = TextEditingController();
   final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-
- void _addTodo() {
-  final user = _auth.currentUser;
-  if (user != null && _todoController.text.isNotEmpty) {
-    _firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('list_tugas')
-        .add({
-          'tugas': _todoController.text,
-          'isDone': false, // ✅ WAJIB
-          'createdAt': Timestamp.now(), // (sekalian dirapikan)
-        });
-    _todoController.clear();
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +18,7 @@ class _HomePageState extends State<HomePage> {
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todo List'),
+        title: Text('Beranda'),
         actions: [
           IconButton(
             onPressed: () => _auth.signOut(),
@@ -45,72 +26,45 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // listview todo list
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore
-                  .collection('users')
-                  .doc(user?.uid)
-                  .collection('list_tugas')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                final docs = snapshot.data!.docs;
-                return ListView.builder(
-                  itemCount: docs.length,
-                  itemBuilder: (context, index) {
-                    final doc = docs[index];
-                    final bool isChecked = doc['isDone'] ?? false;
-
-                    return Card(
-                      child: ListTile(
-                        leading: Checkbox(
-                          value: isChecked,
-                          onChanged: (bool? value) {
-                            doc.reference.update({
-                              'isDone': value,
-                            });
-                          },
-                        ),
-                        title: Text(
-                          doc['tugas'],
-                          style: TextStyle(
-                            decoration: isChecked
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
-                          ),
-                        ),
-                        trailing: IconButton(
-                          onPressed: () => doc.reference.delete(),
-                          icon: Icon(Icons.delete),
-                        ),
-                      ),
-                    );
-                  },
-                );
-
-              },
-            ),
-          ),
-
-          // row (textfield dan iconbutton)
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _todoController,
-                    decoration: InputDecoration(hintText: 'Masukan Tugas'),
-                  ),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.waving_hand,
+                size: 80,
+                color: Colors.amber,
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Selamat Datang!',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
                 ),
-
-                IconButton(onPressed: _addTodo, icon: Icon(Icons.send)),
-              ],
-            ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                user?.email ?? 'Pengguna',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 32),
+              Text(
+                'Aplikasi Todo List Anda siap digunakan',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
